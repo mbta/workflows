@@ -6,6 +6,7 @@ on:
         required: true
         description: The name of the app, as used for the ECS cluster
       dockerfile-path:
+        type: string
         description: Path to the repo's Dockerfile
         required: false
         default: '.'
