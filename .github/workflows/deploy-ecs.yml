@@ -5,6 +5,10 @@ on:
         type: string
         required: true
         description: The name of the app, as used for the ECS cluster
+      dockerfile-path:
+        description: Path to the repo's Dockerfile
+        required: false
+        default: '.'
       environment:
         type: string
         required: true
@@ -33,6 +37,7 @@ jobs:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           docker-repo: ${{ secrets.docker-repo }}
+          dockerfile-path: ${{ inputs.dockerfile-path }}
       - uses: mbta/actions/deploy-ecs@v1
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
