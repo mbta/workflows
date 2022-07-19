@@ -26,7 +26,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Deploy ${{ github.ref_name }} to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     concurrency: ${{ inputs.environment }}
