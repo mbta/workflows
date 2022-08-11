@@ -21,7 +21,7 @@ on:
 
 jobs:
   call-workflow:
-    uses: mbta/workflows/.github/workflows/deploy-ecs@main
+    uses: mbta/workflows/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: my-app
       environment: ${{ github.event.inputs.environment || 'dev }}
