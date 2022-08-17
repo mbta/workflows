@@ -1,0 +1,96 @@
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        type: string
+        required: true
+        description: The name of the app, as used for the service
+      environment:
+        type: string
+        required: true
+        description: E.g. 'prod' or 'dev', to concatenate with app for the service
+      on-prem-cluster:
+        type: string
+        required: true
+        description: On-prem cluster to deploy into ('hsctd-prod-managers' or 'hsctd-dev-managers')
+      splunk-index:
+        type: string
+        required: true
+        description: Splunk index to use for logging
+      task-cpu:
+        type: string
+        required: false
+        default: ""
+      task-memory:
+        type: string
+        required: false
+        default: ""
+      task-port:
+        type: string
+        required: false
+        default: ""
+      notify-slack:
+        type: boolean
+        required: false
+        default: false
+      aws-region:
+        type: string
+        required: false
+        description: "AWS Region to use (default: us-east-1)"
+        default: "us-east-1"
+    secrets:
+      aws-access-key-id:
+        required: true
+      aws-secret-access-key:
+        required: true
+      docker-repo:
+        required: true
+      splunk-host:
+        required: true
+      splunk-token-arn:
+        required: true
+      slack-webhook:
+        required: false
+
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.ref_name }} to ${{ inputs.on-prem-cluster }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency: ${{ inputs.environment }}
+    env:
+      AWS_REGION: ${{ inputs.aws-region }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Calculate Docker tag
+        id: docker
+        run: |
+          echo "::set-output name=tag::git-$(git rev-parse --short HEAD)"
+      - name: Deploy to hsctd-${{ inputs.on-prem-cluster }}
+        id: deploy
+        run: |
+          aws ssm send-command --document-name "ps-pull-ecr-stack-deploy" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}_${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkURL":["${{ secrets.splunk-host }}"],"SplunkIndex":["${{ inputs.splunk-index }}"],"SplunkTokenSecret":["${{ secrets.splunk-token-arn }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
+          echo "::set-output name=command_id::$(jq -r .Command.CommandId document-output.json)"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+      - name: Check if deploy started
+        if: steps.deploy.outputs.command_id == ''
+        run: exit 1
+      - name: Wait for command to finish
+        if: steps.deploy.outputs.command_id != ''
+        run: |
+          if [ ! -f .github/await_command_finish.sh ]; then
+            curl -o .github/await_command_finish.sh https://raw.githubusercontent.com/paulswartz/mbta-workflows/on-prem-deploy/.github/await_command_finish.sh
+          fi
+          bash .github/await_command_finish.sh ${{ inputs.on-prem-cluster }} ${{ steps.deploy.outputs.command_id }} DockerStackDeploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+      - uses: mbta/actions/notify-slack-deploy@v1
+        if: inputs.notify-slack && !cancelled()
+        with:
+          webhook-url: ${{ secrets.slack-webhook }}
+          job-status: ${{ job.status }}
