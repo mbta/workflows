@@ -4,7 +4,7 @@ on:
       app-name:
         type: string
         required: true
-        description: The name of the app, as used for the service
+        description: The name of the app, as used for the service (kebab-case)
       environment:
         type: string
         required: true
@@ -67,7 +67,7 @@ jobs:
       - name: Deploy to hsctd-${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
-          aws ssm send-command --document-name "ps-pull-ecr-stack-deploy" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}_${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
+          aws ssm send-command --document-name "ps-pull-ecr-stack-deploy" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
           echo "::set-output name=command_id::$(jq -r .Command.CommandId document-output.json)"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
