@@ -1,0 +1,41 @@
+---
+name: Checks
+
+on: [push]
+
+jobs:
+
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+      # cache the ASDF directory, using the values from .tool-versions
+      - name: ASDF cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.asdf
+          key: ${{ runner.os }}-asdf-v2-${{ hashFiles('.tool-versions') }}
+        id: asdf-cache
+      # only run `asdf install` if we didn't hit the cache
+      - uses: asdf-vm/actions/install@v1
+        if: steps.asdf-cache.outputs.cache-hit != 'true'
+
+  lint_scripts:
+    name: Lint Scripts
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: ASDF cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.asdf
+          key: ${{ runner.os }}-asdf-v2-${{ hashFiles('.tool-versions') }}
+        id: asdf-cache
+      - name: Setup ASDF environment
+        uses: mbta/actions/reshim-asdf@v1
+      - name: Shellcheck
+        run: shellcheck -a -S style .github/*.sh
