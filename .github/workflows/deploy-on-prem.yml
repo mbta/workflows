@@ -33,6 +33,14 @@ on:
         type: boolean
         required: false
         default: false
+      document-name:
+        type: string
+        required: false
+        default: "mbta-pull-ecr-stack-deploy"
+      await-ref:
+        type: string
+        required: false
+        default: "mbta/workflows/main"
       aws-region:
         type: string
         required: false
@@ -67,7 +75,7 @@ jobs:
       - name: Deploy to hsctd-${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
-          aws ssm send-command --document-name "ps-pull-ecr-stack-deploy" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
+          aws ssm send-command --document-name "${{ inputs.document-name }}" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
           echo "::set-output name=command_id::$(jq -r .Command.CommandId document-output.json)"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
@@ -79,7 +87,7 @@ jobs:
         if: steps.deploy.outputs.command_id != ''
         run: |
           if [ ! -f .github/await_command_finish.sh ]; then
-            curl -o .github/await_command_finish.sh https://raw.githubusercontent.com/paulswartz/mbta-workflows/on-prem-deploy/.github/await_command_finish.sh
+            curl -o .github/await_command_finish.sh https://raw.githubusercontent.com/${{ inputs.await-ref }}/.github/await_command_finish.sh
           fi
           bash .github/await_command_finish.sh ${{ inputs.on-prem-cluster }} ${{ steps.deploy.outputs.command_id }} DockerStackDeploy
         env:
