@@ -33,6 +33,11 @@ on:
         type: boolean
         required: false
         default: false
+      docker-tag:
+        type: string
+        required: false
+        description: A specific Docker tag to deploy
+        default: ""
       document-name:
         type: string
         required: false
@@ -71,7 +76,11 @@ jobs:
       - name: Calculate Docker tag
         id: docker
         run: |
-          echo "::set-output name=tag::git-$(git rev-parse --short HEAD)"
+          if [ -z "${{ inputs.docker-tag }}"]; then
+            echo "::set-output name=tag::git-$(git rev-parse --short HEAD)"
+          else
+            echo "::set-output name=tag::${{ inputs.docker-tag }}""
+          fi
       - name: Deploy to hsctd-${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
