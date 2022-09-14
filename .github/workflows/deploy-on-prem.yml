@@ -67,7 +67,7 @@ jobs:
     name: Deploy ${{ github.ref_name }} to ${{ inputs.on-prem-cluster }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    concurrency: ${{ inputs.environment }}
+    concurrency: ${{ inputs.app-name }}-${{ inputs.environment }}
     env:
       AWS_REGION: ${{ inputs.aws-region }}
     steps:
@@ -81,7 +81,7 @@ jobs:
           else
             echo "::set-output name=tag::${{ inputs.docker-tag }}""
           fi
-      - name: Deploy to hsctd-${{ inputs.on-prem-cluster }}
+      - name: Deploy to ${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
           aws ssm send-command --document-name "${{ inputs.document-name }}" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "1" --max-errors "0" --region ${{ inputs.aws-region  }} | tee document-output.json
