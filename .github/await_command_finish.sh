@@ -29,7 +29,6 @@ for instance_id in $instance_ids; do
         fi
     fi
     if [[ "$status" != Success ]]; then
-        aws ssm get-command
         exit 1
     fi
 done
