@@ -32,7 +32,7 @@ on:
       notify-slack:
         type: boolean
         required: false
-        default: false
+        default: true
       docker-tag:
         type: string
         required: false
