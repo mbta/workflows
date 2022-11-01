@@ -4,7 +4,7 @@ on:
       app-name:
         type: string
         required: true
-        description: The name of the app, as used for the ECS cluster
+        description: The name of the app, used to generate the ECS service name and ECS cluster if not specified
       dockerfile-path:
         type: string
         description: Path to the repo's Dockerfile
@@ -14,6 +14,10 @@ on:
         type: string
         required: true
         description: E.g. 'prod' or 'dev', to concatenate with app for ECS service
+      cluster:
+        type: string
+        required: false
+        description: Name of the ECS cluster, defaulting to app-name if not specified
     secrets:
       aws-access-key-id:
         required: true
@@ -43,7 +47,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          ecs-cluster: ${{ inputs.app-name }}
+          ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
           ecs-service: ${{ inputs.app-name }}-${{ inputs.environment }}
           docker-tag: ${{ steps.build-push.outputs.docker-tag }}
       - uses: mbta/actions/notify-slack-deploy@v1
