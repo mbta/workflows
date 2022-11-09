@@ -29,6 +29,10 @@ on:
         type: string
         required: false
         default: ""
+      update-order:
+        type: string
+        required: false
+        default: ""
       notify-slack:
         type: boolean
         required: false
