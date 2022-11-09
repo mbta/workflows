@@ -19,18 +19,22 @@ on:
         description: Splunk index to use for logging
       task-cpu:
         type: string
+        description: "Percent of CPU to reserve for this task (default: 0.25)"
         required: false
         default: ""
       task-memory:
         type: string
+        description: "Amount of memory (B, K, M or G) to reserve for this task (default: 128M)"
         required: false
         default: ""
       task-port:
         type: string
+        description: (optional) port(s) to expose from the container (space-separated)
         required: false
         default: ""
       update-order:
         type: string
+        description: When starting a new task, whether to stop-first (default) or start-first
         required: false
         default: ""
       notify-slack:
