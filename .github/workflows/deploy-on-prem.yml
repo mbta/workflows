@@ -85,15 +85,15 @@ jobs:
         id: docker
         run: |
           if [ -z "${{ inputs.docker-tag }}"]; then
-            echo "::set-output name=tag::git-$(git rev-parse --short HEAD)"
+            echo "tag=git-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=tag::${{ inputs.docker-tag }}"
+            echo "tag=${{ inputs.docker-tag }}" >> $GITHUB_OUTPUT
           fi
       - name: Deploy to ${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
           aws ssm send-command --document-name "${{ inputs.document-name }}" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "10" --max-errors "0" --region ${{ inputs.aws-region  }} --comment "${{ inputs.app-name }}-${{ inputs.environment}}:${{ steps.docker.outputs.tag }}->${{ inputs.on-prem-cluster }}" | tee document-output.json
-          echo "::set-output name=command_id::$(jq -r .Command.CommandId document-output.json)"
+          echo "command_id=$(jq -r .Command.CommandId document-output.json)" >> $GITHUB_OUTPUT
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
