@@ -36,14 +36,13 @@ jobs:
     concurrency: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v2
-      - uses: mbta/actions/build-push-ecr@v1
+      - uses: mbta/actions/build-push-ecr@bak-arch
         id: build-push
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           docker-repo: ${{ secrets.docker-repo }}
           dockerfile-path: ${{ inputs.dockerfile-path }}
-          docker-additional-args: "--platform=linux/arm64"
       - uses: mbta/actions/deploy-ecs@v1
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
