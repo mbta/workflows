@@ -32,9 +32,19 @@ on:
         description: (optional) port(s) to expose from the container (space-separated)
         required: false
         default: ""
+      port-mode:
+        type: string
+        description: "(optional) mode to use for port binding: ingress (default) or host"
+        required: false
+        default: ""
       update-order:
         type: string
         description: When starting a new task, whether to stop-first (default) or start-first
+        required: false
+        default: ""
+      placement-constraint:
+        type: string
+        description: (optional) placement constraint to apply when deploying
         required: false
         default: ""
       task-replicas:
@@ -96,7 +106,7 @@ jobs:
       - name: Deploy to ${{ inputs.on-prem-cluster }}
         id: deploy
         run: |
-          aws ssm send-command --document-name "${{ inputs.document-name }}" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"TaskReplicas":["${{ inputs.task-replicas}}"],"UpdateOrder":["${{ inputs.update-order }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "10" --max-errors "0" --region ${{ inputs.aws-region  }} --comment "${{ inputs.app-name }}-${{ inputs.environment}}:${{ steps.docker.outputs.tag }}->${{ inputs.on-prem-cluster }}" | tee document-output.json
+          aws ssm send-command --document-name "${{ inputs.document-name }}" --document-version "\$LATEST" --targets '[{"Key":"resource-groups:Name","Values":["${{ inputs.on-prem-cluster }}"]}]' --parameters '{"ECRRepo":["${{ secrets.docker-repo }}"],"DockerTag":["${{ steps.docker.outputs.tag }}"],"TaskCpu":["${{ inputs.task-cpu }}"], "TaskMemory": ["${{ inputs.task-memory }}"],"TaskPort":["${{ inputs.task-port }}"],"PortMode":["${{ inputs.port-mode }}"],"TaskReplicas":["${{ inputs.task-replicas}}"],"UpdateOrder":["${{ inputs.update-order }}"],"PlacementConstraint":["${{ inputs.placement-constraint }}"],"ServiceName":["${{ inputs.app-name }}-${{ inputs.environment }}"],"EnvironmentSecret":["${{ inputs.app-name }}-${{ inputs.environment }}-environment"],"SplunkIndex":["${{ inputs.splunk-index }}"]}' --timeout-seconds 600 --max-concurrency "10" --max-errors "0" --region ${{ inputs.aws-region  }} --comment "${{ inputs.app-name }}-${{ inputs.environment}}:${{ steps.docker.outputs.tag }}->${{ inputs.on-prem-cluster }}" | tee document-output.json
           echo "command_id=$(jq -r .Command.CommandId document-output.json)" >> $GITHUB_OUTPUT
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
