@@ -22,6 +22,10 @@ on:
         type: string
         required: false
         description: Name of the ECS service, defaulting to app-name-environment if not specified
+      task-definition:
+        type: string
+        required: false
+        description: Name of the ECS task, defaulting to app-name-environment if not specified
     secrets:
       aws-access-key-id:
         required: true
@@ -53,6 +57,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
           ecs-service: ${{ inputs.service || format('{0}-{1}', inputs.app-name, inputs.environment) }}
+          ecs-task-definition: ${{ inputs.task-definition || format('{0}-{1}', inputs.app-name, inputs.environment) }}
           docker-tag: ${{ steps.build-push.outputs.docker-tag }}
       - uses: mbta/actions/notify-slack-deploy@v1
         if: ${{ !cancelled() }}
