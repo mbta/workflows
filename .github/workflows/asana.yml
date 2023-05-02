@@ -4,15 +4,15 @@ on:
       merged-section:
         type: string
         required: false
-        description: The Asana project section for tickets with PRs that have been merged.
+        description: The Asana project section for tickets with PRs that have been merged. Requires secrets.asana-token.
       review-section:
         type: string
         required: false
-        description: The Asana project section for tickets with PRs that have a review requested.
+        description: The Asana project section for tickets with PRs that have a review requested. Requires secrets.asana-token.
       complete-on-merge:
         type: boolean
         required: false
-        description: Whether to mark tasks for merged PRs as complete.
+        description: Whether to mark tasks for merged PRs as complete. Requires secrets.asana-github-secret.
     secrets:
       asana-token:
         required: false
