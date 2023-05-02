@@ -24,7 +24,7 @@ jobs:
     if: github.actor != 'dependabot[bot]' &&  github.event.pull_request.merged == true
     steps:
       - name: Github-Asana action from Insurify
-        uses: insurify/github-asana-action@v1.0.3
+        uses: insurify/github-asana-action@v1.0.5
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
@@ -34,7 +34,7 @@ jobs:
     if: github.actor != 'dependabot[bot]' && github.event.pull_request.merged != true
     steps:
       - name: Github-Asana action from Insurify
-        uses: insurify/github-asana-action@v1.0.3
+        uses: insurify/github-asana-action@v1.0.5
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
@@ -45,7 +45,7 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     steps:
       - name: Create pull request attachments
-        uses: Asana/create-app-attachment-github-action@latest
+        uses: Asana/create-app-attachment-github-action@v1.2
         id: postAttachment
         with:
           asana-secret: ${{ secrets.asana-github-secret }}
