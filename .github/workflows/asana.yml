@@ -9,6 +9,10 @@ on:
         type: string
         required: false
         description: The Asana project section for tickets with PRs that have a review requested.
+      complete-on-merge:
+        type: boolean
+        required: false
+        description: Whether to mark tasks for merged PRs as complete.
     secrets:
       asana-token:
         required: false
@@ -25,6 +29,7 @@ jobs:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
           target-section: ${{ inputs.merged-section }}
+          mark-complete: ${{ inputs.complete-on-merge }}
   move-to-in-review-asana-ticket-job:
     runs-on: ubuntu-latest
     if: inputs.review-section != '' && github.actor != 'dependabot[bot]' && github.event.action == 'review_requested'
