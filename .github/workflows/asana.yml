@@ -17,7 +17,7 @@ on:
       asana-token:
         required: false
       asana-github-secret:
-        required: true
+        required: false
 jobs:
   move-to-merged-asana-ticket-job:
     runs-on: ubuntu-latest
