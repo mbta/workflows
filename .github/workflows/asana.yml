@@ -1,10 +1,6 @@
 on:
   workflow_call:
     inputs:
-      project:
-        type: string
-        required: false
-        description: The Asana project to manipulate.
       merged-section:
         type: string
         required: false
@@ -23,22 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.merged-section != '' && github.actor != 'dependabot[bot]' &&  github.event.pull_request.merged == true
     steps:
-      - name: Github-Asana action from Insurify
-        uses: insurify/github-asana-action@v1.0.3
+      - name: Move ticket on merge
+        uses:  mbta/github-asana-action@v4.3.0
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
-          targets: '[{"project": "${{ inputs.project }}", "section": "${{ inputs.merged-section }}"}]'
+          target-section: ${{ inputs.merged-section }}
   move-to-in-review-asana-ticket-job:
     runs-on: ubuntu-latest
     if: inputs.review-section != '' && github.actor != 'dependabot[bot]' && github.event.action == 'review_requested'
     steps:
-      - name: Github-Asana action from Insurify
-        uses: insurify/github-asana-action@v1.0.3
+      - name: Move ticket on review requested
+        uses:  mbta/github-asana-action@v4.3.0
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
-          targets: '[{"project": "${{ inputs.project }}", "section": "${{ inputs.review-section }}"}]'
+          target-section: ${{ inputs.review-section }}
   create-asana-attachment-job:
     runs-on: ubuntu-latest
     name: Create pull request attachments on Asana tasks
