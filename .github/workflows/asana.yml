@@ -17,6 +17,10 @@ on:
         type: boolean
         default: false
         description: Whether to attach the PR to the Asana ticket. Requires secrets.asana-github-secret.
+      trigger-phrase:
+        type: string
+        default: "\\*\\*Asana Ticket:\\*\\*"
+        description: Phrase to trigger moving ticket between columns.
     secrets:
       asana-token:
         required: false
@@ -31,7 +35,7 @@ jobs:
         uses:  mbta/github-asana-action@v4.3.0
         with:
           asana-pat: ${{ secrets.asana-token }}
-          trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
+          trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.merged-section }}
           mark-complete: ${{ inputs.complete-on-merge }}
   move-to-in-review-asana-ticket-job:
@@ -42,7 +46,7 @@ jobs:
         uses:  mbta/github-asana-action@v4.3.0
         with:
           asana-pat: ${{ secrets.asana-token }}
-          trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
+          trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.review-section }}
   create-asana-attachment-job:
     runs-on: ubuntu-latest
