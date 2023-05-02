@@ -24,8 +24,10 @@ on:
     secrets:
       asana-token:
         required: false
-      asana-github-secret:
+        description: Asana personal access token that GitHub Actions uses to move ticket between sections.
+      github-secret:
         required: false
+        description: GitHub secret that Asana uses to fetch PR information.
 jobs:
   move-to-merged-asana-ticket-job:
     runs-on: ubuntu-latest
