@@ -3,25 +3,25 @@ on:
     inputs:
       project:
         type: string
-        required: true
+        required: false
         description: The Asana project to manipulate.
       merged-section:
         type: string
-        required: true
+        required: false
         description: The name of the "merged" section in Asana.
       review-section:
         type: string
-        required: true
+        required: false
         description: The name of the "in review" section in Asana.
     secrets:
       asana-token:
-        required: true
+        required: false
       asana-github-secret:
         required: true
 jobs:
   move-to-merged-asana-ticket-job:
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' &&  github.event.pull_request.merged == true
+    if: inputs.merged-section != '' && github.actor != 'dependabot[bot]' &&  github.event.pull_request.merged == true
     steps:
       - name: Github-Asana action from Insurify
         uses: insurify/github-asana-action@v1.0.3
@@ -31,7 +31,7 @@ jobs:
           targets: '[{"project": "${{ inputs.project }}", "section": "${{ inputs.merged-section }}"}]'
   move-to-in-review-asana-ticket-job:
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' && github.event.pull_request.merged != true
+    if: inputs.review-section != '' && github.actor != 'dependabot[bot]' && github.event.pull_request.merged != true
     steps:
       - name: Github-Asana action from Insurify
         uses: insurify/github-asana-action@v1.0.3
