@@ -11,7 +11,7 @@ on:
         description: The Asana project section for tickets with PRs that have a review requested. Requires secrets.asana-token.
       complete-on-merge:
         type: boolean
-        required: false
+        default: false
         description: Whether to mark tasks for merged PRs as complete. Requires secrets.asana-github-secret.
     secrets:
       asana-token:
