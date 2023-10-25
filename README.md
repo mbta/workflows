@@ -21,13 +21,12 @@ on:
 
 jobs:
   call-workflow:
-    uses: mbta/workflows/.github/workflows/deploy-ecs.yml@main
+    uses: mbta/workflows/.github/workflows/deploy-ecs.yml@v2
     with:
       app-name: my-app
       environment: ${{ github.event.inputs.environment || 'dev' }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
       docker-repo: ${{ secrets.DOCKER_REPO }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
 ```
@@ -49,15 +48,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - uses: mbta/actions/build-push-ecr@v1
+      - uses: mbta/actions/build-push-ecr@v2
         id: build-push
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           docker-repo: ${{ secrets.DOCKER_REPO }}
   Deploy:
     needs: Build
-    uses: mbta/workflows/.github/workflows/deploy-on-prem.yml@main
+    uses: mbta/workflows/.github/workflows/deploy-on-prem.yml@v2
     with:
       app-name: my-app
       environment: dev
@@ -67,8 +65,7 @@ jobs:
       task-memory: 256M
       task-port: 8081
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
       docker-repo: ${{ secrets.DOCKER_REPO }}
       splunk-host: ${{ secrets.SPLUNK_HOST }}
       splunk-token-arn: ${{ secrets.SPLUNK_TOKEN_ARN }}
