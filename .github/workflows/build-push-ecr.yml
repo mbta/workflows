@@ -4,12 +4,10 @@ on:
       aws-region:
         type: string
         description: AWS region to use
-        required: false
         default: us-east-1
       dockerfile-path:
         type: string
         description: Path to the build context, i.e. the folder containing the Dockerfile
-        required: false
         default: "."
       docker-additional-tags:
         type: string
@@ -20,28 +18,18 @@ on:
           separated by newlines.
           The primary tag is `type=sha,priority=1000,prefix=git`.
           To override the docker-tag output, pass in something with priority above 1000.
-        required: false
-        default: ""
       docker-build-args:
         type: string
         description: Build args for the Docker container (`FOO=bar`), separated by newlines.
-        required: false
-        default: ""
       extract-root:
         type: string
         description: Root folder to use if extracting files from container
-        required: false
-        default: ""
       extract-paths:
         type: string
         description: Paths within root folder to extract from container (space-delimited)
-        required: false
-        default: ""
       extract-artifact-name:
         type: string
         description: Name of GitHub Actions artifact to upload extracted-files.tar to
-        required: false
-        default: ""
     secrets:
       aws-role-arn:
         required: true
