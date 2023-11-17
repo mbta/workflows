@@ -30,11 +30,23 @@ on:
       extract-artifact-name:
         type: string
         description: Name of GitHub Actions artifact to upload extracted-files.tar to
+      cache-load:
+        type: boolean
+        description: Whether or not to load the GitHub Actions cache
+        default: true
+      cache-save:
+        type: boolean
+        description: Whether or not to save the container layers to the GitHub Actions cache
+        default: true
+      push:
+        type: boolean
+        description: Whether or not to push the built image
+        default: true
     secrets:
       aws-role-arn:
-        required: true
+        required: false # if not pushing, no AWS auth needed
       docker-repo:
-        description: ECR Docker repo to push to
+        description: ECR Docker repo to push to # also part of container name even if not pushing
         required: true
     outputs:
       docker-tag:
@@ -48,10 +60,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ inputs.push }}
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           aws-region: ${{ inputs.aws-region }}
       - uses: aws-actions/amazon-ecr-login@v2
+        if: ${{ inputs.push }}
       - name: Calculate tags
         id: additional-tags
         shell: bash
@@ -86,9 +100,10 @@ jobs:
           build-args: ${{ inputs.docker-build-args }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: ${{ inputs.cache-load && 'type=gha' || '' }}
+          cache-to: ${{ inputs.cache-save && 'type=gha,mode=max' || '' }}
       - name: docker push
+        if: ${{ inputs.push }}
         run: docker push --all-tags ${{ secrets.docker-repo }}
       - name: Extract files
         if: ${{ inputs.extract-root != '' }}
