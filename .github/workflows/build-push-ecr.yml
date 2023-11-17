@@ -1,0 +1,119 @@
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        type: string
+        description: AWS region to use
+        required: false
+        default: us-east-1
+      dockerfile-path:
+        type: string
+        description: Path to the build context, i.e. the folder containing the Dockerfile
+        required: false
+        default: "."
+      docker-additional-tags:
+        type: string
+        description: |
+          Additional tags for the image, separated by spaces.
+
+          Can also be formatted for docker/metadata-action (e.g. type=ref,event=tag) and
+          separated by newlines.
+          The primary tag is `type=sha,priority=1000,prefix=git`.
+          To override the docker-tag output, pass in something with priority above 1000.
+        required: false
+        default: ""
+      docker-build-args:
+        type: string
+        description: Build args for the Docker container (`FOO=bar`), separated by newlines.
+        required: false
+        default: ""
+      extract-root:
+        type: string
+        description: Root folder to use if extracting files from container
+        required: false
+        default: ""
+      extract-paths:
+        type: string
+        description: Paths within root folder to extract from container (space-delimited)
+        required: false
+        default: ""
+      extract-artifact-name:
+        type: string
+        description: Name of GitHub Actions artifact to upload extracted-files.tar to
+        required: false
+        default: ""
+    secrets:
+      aws-role-arn:
+        required: true
+      docker-repo:
+        description: ECR Docker repo to push to
+        required: true
+    outputs:
+      docker-tag:
+        description: Docker tag that was actually deployed (does not include the Docker repo)
+        value: ${{ jobs.build-push.outputs.docker-tag }}
+
+jobs:
+  build-push:
+    name: Build container image and push to ECR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Calculate tags
+        id: additional-tags
+        shell: bash
+        run: |
+          {
+            echo 'tags<<EOF'
+            if ${{ contains(inputs.docker-additional-tags, '=') }}; then
+              # already in the right format for docker/metadata-action
+              echo "${{ inputs.docker-additional-tags }}"
+            else
+              # pass tags in as raw
+              docker_additional_tags=(${{ inputs.docker-additional-tags }})
+              for tag in "${docker_additional_tags[@]}"; do
+                echo "type=raw,priority=900,value=${tag}"
+              done
+            fi
+            echo 'EOF'
+          } | tee -a "$GITHUB_OUTPUT"
+        if: ${{ inputs.docker-additional-tags != '' }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ secrets.docker-repo }}
+          tags: |
+            type=sha,priority=1000,prefix=git-
+            ${{ steps.additional-tags.outputs.tags }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
+        with:
+          load: true
+          context: ${{ inputs.dockerfile-path }}
+          build-args: ${{ inputs.docker-build-args }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: docker push
+        run: docker push --all-tags ${{ secrets.docker-repo }}
+      - name: Extract files
+        if: ${{ inputs.extract-root != '' }}
+        run: >
+          docker run --rm
+          -w ${{ inputs.extract-root }}
+          ${{ secrets.docker-repo }}:${{ steps.meta.outputs.version }}
+          tar c ${{ inputs.extract-paths }}
+          > extracted-files.tar
+      - uses: actions/upload-artifact@v3
+        if: ${{ inputs.extract-root != '' }}
+        with:
+          name: ${{ inputs.extract-artifact-name }}
+          path: extracted-files.tar
+    outputs:
+      docker-tag: ${{ steps.meta.outputs.version }}
