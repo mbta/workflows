@@ -57,6 +57,9 @@ jobs:
   build-push:
     name: Build container image and push to ECR
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
