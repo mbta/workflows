@@ -30,23 +30,15 @@ on:
       extract-artifact-name:
         type: string
         description: Name of GitHub Actions artifact to upload extracted-files.tar to
-      cache-load:
-        type: boolean
-        description: Whether or not to load the GitHub Actions cache
-        default: true
-      cache-save:
-        type: boolean
-        description: Whether or not to save the container layers to the GitHub Actions cache
-        default: true
-      push:
-        type: boolean
-        description: Whether or not to push the built image
-        default: true
+      cache:
+        type: string
+        description: Whether or not to use the GitHub Actions cache - "true", "read-only", "false"
+        default: "true"
     secrets:
       aws-role-arn:
-        required: false # if not pushing, no AWS auth needed
+        required: true
       docker-repo:
-        description: ECR Docker repo to push to # also part of container name even if not pushing
+        description: ECR Docker repo to push to
         required: true
     outputs:
       docker-tag:
@@ -60,12 +52,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
-        if: ${{ inputs.push }}
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           aws-region: ${{ inputs.aws-region }}
       - uses: aws-actions/amazon-ecr-login@v2
-        if: ${{ inputs.push }}
       - name: Calculate tags
         id: additional-tags
         shell: bash
@@ -100,10 +90,9 @@ jobs:
           build-args: ${{ inputs.docker-build-args }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: ${{ inputs.cache-load && 'type=gha' || '' }}
-          cache-to: ${{ inputs.cache-save && 'type=gha,mode=max' || '' }}
+          cache-from: ${{ inputs.cache != 'false' && 'type=gha' || '' }}
+          cache-to: ${{ inputs.cache == 'true' && 'type=gha,mode=max' || '' }}
       - name: docker push
-        if: ${{ inputs.push }}
         run: docker push --all-tags ${{ secrets.docker-repo }}
       - name: Extract files
         if: ${{ inputs.extract-root != '' }}
