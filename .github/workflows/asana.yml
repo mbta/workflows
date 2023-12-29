@@ -23,7 +23,7 @@ on:
         description: Whether to attach the PR to the Asana ticket. Requires secrets.asana-github-secret.
       trigger-phrase:
         type: string
-        default: "\\*\\*Asana Ticket:\\*\\*(?:(\\s)*\\[.*\\]\\(|(\\s)*)"
+        default: "\\*\\*Asana Ticket:\\*\\*(?:(\\s)*\\[.*\\]\\()?"
         description: Phrase to trigger moving ticket between columns.
     secrets:
       asana-token:
