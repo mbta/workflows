@@ -50,7 +50,7 @@ jobs:
     if: inputs.development-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'opened' || github.event.action == 'reopened') && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket to In Development
-        uses: mbta/github-asana-action@v4.3.0
+        uses: mbta/github-asana-action@v4.4.0
         with:
             asana-pat: ${{ secrets.asana-token }}
             trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -61,7 +61,7 @@ jobs:
     if: inputs.merged-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.pull_request.merged == true && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on merge
-        uses:  mbta/github-asana-action@v4.3.0
+        uses:  mbta/github-asana-action@v4.4.0
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -73,7 +73,7 @@ jobs:
     if: inputs.review-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.action == 'review_requested' && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on review requested
-        uses:  mbta/github-asana-action@v4.3.0
+        uses:  mbta/github-asana-action@v4.4.0
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
