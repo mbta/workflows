@@ -47,7 +47,7 @@ jobs:
   move-to-in-development-asana-ticket-job:
     runs-on: ubuntu-latest
     needs: check-for-secrets
-    if: inputs.development-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'opened' || github.event.action == 'reopened') && github.actor != 'dependabot[bot]'
+    if: inputs.development-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'converted_to_draft') && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket to In Development
         uses: mbta/github-asana-action@v4.4.1
