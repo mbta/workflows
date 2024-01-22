@@ -13,6 +13,10 @@ on:
         type: string
         required: false
         description: The Asana project section for tickets with PRs that have a review requested. Requires secrets.asana-token.
+      approved-section:
+        type: string
+        required: false
+        description: The Asana project section for tickets with PRs that have been approved. Requires secrets.asana-token.
       complete-on-merge:
         type: boolean
         default: false
@@ -78,6 +82,17 @@ jobs:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.review-section }}
+  move-to-approved-asana-ticket-job:
+    runs-on: ubuntu-latest
+    needs: check-for-secrets
+    if: inputs.approved-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.action == 'submitted' && github.event.review.state == 'approved' && !github.event.pull_request.draft && github.actor != 'dependabot[bot]'
+    steps:
+      - name: Move ticket on approval
+        uses:  mbta/github-asana-action@v4.4.1
+        with:
+          asana-pat: ${{ secrets.asana-token }}
+          trigger-phrase: ${{ inputs.trigger-phrase }}
+          target-section: ${{ inputs.approved-section }}
   create-asana-attachment-job:
     runs-on: ubuntu-latest
     needs: check-for-secrets
