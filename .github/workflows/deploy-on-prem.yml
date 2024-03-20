@@ -124,7 +124,7 @@ jobs:
             curl -o .github/await_command_finish.sh https://raw.githubusercontent.com/${{ inputs.await-ref }}/.github/await_command_finish.sh
           fi
           bash .github/await_command_finish.sh ${{ inputs.on-prem-cluster }} ${{ steps.deploy.outputs.command_id }} DockerStackDeploy
-      - uses: mbta/actions/notify-slack-deploy@v1
+      - uses: mbta/actions/notify-slack-deploy@v2
         if: inputs.notify-slack && !cancelled()
         with:
           webhook-url: ${{ secrets.slack-webhook }}

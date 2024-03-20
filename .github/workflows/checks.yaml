@@ -36,7 +36,7 @@ jobs:
           key: ${{ runner.os }}-asdf-v2-${{ hashFiles('.tool-versions') }}
         id: asdf-cache
       - name: Setup ASDF environment
-        uses: mbta/actions/reshim-asdf@v1
+        uses: mbta/actions/reshim-asdf@v2
       - name: Shellcheck
         run: shellcheck -a -S style .github/*.sh
       - name: Check workflow files
