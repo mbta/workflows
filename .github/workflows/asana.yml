@@ -104,5 +104,6 @@ jobs:
         id: postAttachment
         with:
           asana-secret: ${{ secrets.github-secret }}
+        continue-on-error: true
       - name: Log output status
         run: echo "Status is ${{ steps.postAttachment.outputs.status }}"
