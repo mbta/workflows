@@ -10,6 +10,11 @@ on:
         description: Path to the repo's Dockerfile
         required: false
         default: '.'
+      docker-additional-args:
+        type: string
+        description: Additional arguments to pass to call to docker
+        required: false
+        default: ''
       environment:
         type: string
         required: true
@@ -43,6 +48,7 @@ jobs:
           role-to-assume: ${{ secrets.aws-role-arn }}
           docker-repo: ${{ secrets.docker-repo }}
           dockerfile-path: ${{ inputs.dockerfile-path }}
+          docker-additional-args: ${{ inputs.docker-additional-args }}
       - uses: mbta/actions/deploy-ecs@v2
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
