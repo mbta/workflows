@@ -60,7 +60,7 @@ jobs:
           ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
           ecs-service: ${{ inputs.app-name }}-${{ inputs.environment }}
           docker-tag: ${{ steps.build-push.outputs.docker-tag }}
-          allow-zero-desired: ${{ inputs.allow-zero-desiredf && 'true' || 'false' }}
+          allow-zero-desired: ${{ inputs.allow-zero-desired && 'true' || 'false' }}
       - uses: mbta/actions/notify-slack-deploy@v2
         if: ${{ !cancelled() }}
         with:
