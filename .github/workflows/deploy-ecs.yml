@@ -23,6 +23,11 @@ on:
         type: string
         required: false
         description: Name of the ECS cluster, defaulting to app-name if not specified
+      allow-zero-desired:
+        type: boolean
+        description: Whether the deploy allows the ECS desiredCount to be 0
+        required: false
+        default: false
     secrets:
       aws-role-arn:
         required: true
@@ -55,6 +60,7 @@ jobs:
           ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
           ecs-service: ${{ inputs.app-name }}-${{ inputs.environment }}
           docker-tag: ${{ steps.build-push.outputs.docker-tag }}
+          allow-zero-desired: ${{ inputs.allow-zero-desired && 'true' || 'false' }}
       - uses: mbta/actions/notify-slack-deploy@v2
         if: ${{ !cancelled() }}
         with:
