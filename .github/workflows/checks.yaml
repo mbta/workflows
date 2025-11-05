@@ -38,6 +38,6 @@ jobs:
       - name: Setup ASDF environment
         uses: mbta/actions/reshim-asdf@v2
       - name: Shellcheck
-        run: shellcheck -a -S style .github/*.sh
+        run: if ls .github/*.sh >/dev/null 2>&1; then shellcheck -a -S style .github/*.sh; fi
       - name: Check workflow files
         run: actionlint -color
