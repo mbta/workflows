@@ -15,6 +15,11 @@ on:
         description: Additional arguments to pass to call to docker
         required: false
         default: ''
+      docker-additional-tags:
+        type: string
+        description: Additional tags for the image, separated by spaces
+        required: false
+        default: ''
       environment:
         type: string
         required: true
@@ -54,6 +59,7 @@ jobs:
           docker-repo: ${{ secrets.docker-repo }}
           dockerfile-path: ${{ inputs.dockerfile-path }}
           docker-additional-args: ${{ inputs.docker-additional-args }}
+          docker-additional-tags: ${{ inputs.docker-additional-tags }}
       - uses: mbta/actions/deploy-ecs@v2
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
