@@ -60,7 +60,7 @@ jobs:
           dockerfile-path: ${{ inputs.dockerfile-path }}
           docker-additional-args: ${{ inputs.docker-additional-args }}
           docker-additional-tags: ${{ inputs.docker-additional-tags }}
-      - uses: mbta/actions/deploy-ecs@v2
+      - uses: mbta/actions/deploy-ecs@cbj/ecs-register-task-definition-output-off
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
