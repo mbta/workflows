@@ -1,3 +1,6 @@
+name: Deploy to ECS
+description: Deploy change to ECS environment
+
 on:
   workflow_call:
     inputs:
@@ -9,17 +12,17 @@ on:
         type: string
         description: Path to the repo's Dockerfile
         required: false
-        default: '.'
+        default: "."
       docker-additional-args:
         type: string
         description: Additional arguments to pass to call to docker
         required: false
-        default: ''
+        default: ""
       docker-additional-tags:
         type: string
         description: Additional tags for the image, separated by spaces
         required: false
-        default: ''
+        default: ""
       environment:
         type: string
         required: true
