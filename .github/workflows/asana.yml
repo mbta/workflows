@@ -36,6 +36,10 @@ on:
       github-secret:
         required: false
         description: GitHub secret that Asana uses to fetch PR information.
+
+permissions:
+  pull-requests: read # Needed to read Asana ticket info from PR description
+
 jobs:
   check-for-secrets:
     runs-on: ubuntu-latest
