@@ -45,9 +45,13 @@ jobs:
     steps:
       - id: one
         run: |
-          [ -n "${{ secrets.asana-token }}" ] && echo "has-asana-token=yes" >> "$GITHUB_OUTPUT"
-          [ -n "${{ secrets.github-secret }}" ] && echo "has-github-secret=yes" >> "$GITHUB_OUTPUT"
+          [ -n "${ASANA_TOKEN}" ] && echo "has-asana-token=yes" >> "$GITHUB_OUTPUT"
+          [ -n "${MY_GITHUB_SECRET}" ] && echo "has-github-secret=yes" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
+        env:
+          ASANA_TOKEN: ${{ secrets.asana-token }}
+          # Prefixed with MY_ to avoid trespassing on the GITHUB_* env namespace.
+          MY_GITHUB_SECRET: ${{ secrets.github-secret }}
   move-to-in-development-asana-ticket-job:
     runs-on: ubuntu-latest
     needs: check-for-secrets
