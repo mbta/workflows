@@ -58,5 +58,4 @@ jobs:
         uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa # v0.5.7
         with:
           persona: pedantic
-          inputs: .github/workflows # Prevents zizmor from auditing dependabot.yml
           advanced-security: false
