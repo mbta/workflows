@@ -2,7 +2,8 @@ name: Checks
 
 on: [push]
 
-permissions: {}
+permissions:
+  contents: read # Only needed for private repos. Needed to clone the repo.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,7 +27,6 @@ jobs:
       # only run `asdf install` if we didn't hit the cache
       - uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47 # v4.0.1
         if: steps.asdf-cache.outputs.cache-hit != 'true'
-
   lint_scripts:
     name: Lint Scripts
     runs-on: ubuntu-latest
@@ -47,3 +47,13 @@ jobs:
         run: if ls .github/*.sh >/dev/null 2>&1; then shellcheck -a -S style .github/*.sh; fi
       - name: Check workflow files
         run: actionlint -color
+  zizmor:
+    name: Run zizmor 🌈
+    runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      security-events: write # Required for upload-sarif (used by zizmor-action) to upload SARIF files.
+      actions: read # Only needed for private repos. Needed for upload-sarif to read workflow run info.
+    steps:
+      - name: Run zizmor 🌈
+        uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa # v0.5.7
