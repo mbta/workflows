@@ -1,5 +1,4 @@
 name: Manage Asana ticket
-description: Update Asana ticket associated with this pull request
 
 on:
   workflow_call:

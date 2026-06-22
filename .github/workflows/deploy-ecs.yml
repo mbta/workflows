@@ -1,5 +1,4 @@
 name: Deploy to ECS
-description: Deploy change to ECS environment
 
 on:
   workflow_call:
