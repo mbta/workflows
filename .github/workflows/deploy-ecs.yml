@@ -44,13 +44,15 @@ on:
       slack-webhook:
         required: true
 
+permissions: {}
+
 jobs:
   deploy:
     name: Deploy ${{ github.ref_name }} to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # Needed to access ECR and ECS
+      contents: read # Needed to access commit details and other repository info
     environment: ${{ inputs.environment }}
     concurrency: ${{ inputs.environment }}
     steps:
