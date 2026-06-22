@@ -2,8 +2,7 @@ name: Checks
 
 on: [push]
 
-permissions:
-  contents: read # Only needed for private repos. Needed to clone the repo.
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
