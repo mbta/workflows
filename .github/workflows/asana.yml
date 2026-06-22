@@ -1,3 +1,5 @@
+name: Manage Asana ticket
+
 on:
   workflow_call:
     inputs:
@@ -36,8 +38,13 @@ on:
       github-secret:
         required: false
         description: GitHub secret that Asana uses to fetch PR information.
+
+permissions:
+  pull-requests: read # Needed to read Asana ticket info from PR description
+
 jobs:
   check-for-secrets:
+    name: Check that required secrets are set
     runs-on: ubuntu-latest
     outputs:
       has-asana-token: ${{ steps.one.outputs.has-asana-token }}
@@ -45,65 +52,75 @@ jobs:
     steps:
       - id: one
         run: |
-          [ -n "${{ secrets.asana-token }}" ] && echo "has-asana-token=yes" >> "$GITHUB_OUTPUT"
-          [ -n "${{ secrets.github-secret }}" ] && echo "has-github-secret=yes" >> "$GITHUB_OUTPUT"
+          [ -n "${ASANA_TOKEN}" ] && echo "has-asana-token=yes" >> "$GITHUB_OUTPUT"
+          [ -n "${MY_GITHUB_SECRET}" ] && echo "has-github-secret=yes" >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
+        env:
+          ASANA_TOKEN: ${{ secrets.asana-token }}
+          # Prefixed with MY_ to avoid trespassing on the GITHUB_* env namespace.
+          MY_GITHUB_SECRET: ${{ secrets.github-secret }}
   move-to-in-development-asana-ticket-job:
+    name: Move ticket to In Development column
     runs-on: ubuntu-latest
     needs: check-for-secrets
     if: inputs.development-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'submitted' && github.event.review.state == 'changes_requested') || (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'converted_to_draft' || github.event.action == 'edited') && (toJson(github.event.pull_request.requested_reviewers) == '[]' && toJson(github.event.pull_request.requested_teams) == '[]' || github.event.pull_request.draft) && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket to In Development
-        uses: mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
-            asana-pat: ${{ secrets.asana-token }}
-            trigger-phrase: ${{ inputs.trigger-phrase }}
-            target-section: ${{ inputs.development-section }}
+          asana-pat: ${{ secrets.asana-token }}
+          trigger-phrase: ${{ inputs.trigger-phrase }}
+          target-section: ${{ inputs.development-section }}
   move-to-merged-asana-ticket-job:
+    name: Move ticket to Merged column
     runs-on: ubuntu-latest
     needs: check-for-secrets
     if: inputs.merged-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.pull_request.merged == true && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on merge
-        uses:  mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.merged-section }}
           mark-complete: ${{ inputs.complete-on-merge }}
   move-to-in-review-asana-ticket-job:
+    name: Move ticket to In Review column
     runs-on: ubuntu-latest
     needs: check-for-secrets
     if: inputs.review-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'review_requested' || github.event.action == 'ready_for_review' && (toJson(github.event.pull_request.requested_reviewers) != '[]' || toJson(github.event.pull_request.requested_teams) != '[]')) && !github.event.pull_request.draft && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on review requested
-        uses:  mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.review-section }}
   move-to-approved-asana-ticket-job:
+    name: Move ticket to Approved column
     runs-on: ubuntu-latest
     needs: check-for-secrets
     if: inputs.approved-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.action == 'submitted' && github.event.review.state == 'approved' && !github.event.pull_request.draft && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on approval
-        uses:  mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
           target-section: ${{ inputs.approved-section }}
   create-asana-attachment-job:
+    name: Create pull request attachments on Asana tasks
     runs-on: ubuntu-latest
     needs: check-for-secrets
-    name: Create pull request attachments on Asana tasks
     if: inputs.attach-pr && needs.check-for-secrets.outputs.has-github-secret == 'yes' && github.actor != 'dependabot[bot]'
     steps:
       - name: Create pull request attachments
-        uses: Asana/create-app-attachment-github-action@v1.3
+        uses: Asana/create-app-attachment-github-action@affc72d57bac733d864d4189ed69a9cbd61a9e4f # v1.3
         id: postAttachment
         with:
           asana-secret: ${{ secrets.github-secret }}
         continue-on-error: true
       - name: Log output status
-        run: echo "Status is ${{ steps.postAttachment.outputs.status }}"
+        run: echo "Status is ${POST_ATTACHMENT_STATUS}"
+        env:
+          POST_ATTACHMENT_STATUS: ${{ steps.postAttachment.outputs.status }}
