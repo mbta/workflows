@@ -67,7 +67,7 @@ jobs:
     if: inputs.development-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'submitted' && github.event.review.state == 'changes_requested') || (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'converted_to_draft' || github.event.action == 'edited') && (toJson(github.event.pull_request.requested_reviewers) == '[]' && toJson(github.event.pull_request.requested_teams) == '[]' || github.event.pull_request.draft) && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket to In Development
-        uses: mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -79,7 +79,7 @@ jobs:
     if: inputs.merged-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.pull_request.merged == true && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on merge
-        uses: mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -92,7 +92,7 @@ jobs:
     if: inputs.review-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && (github.event.action == 'review_requested' || github.event.action == 'ready_for_review' && (toJson(github.event.pull_request.requested_reviewers) != '[]' || toJson(github.event.pull_request.requested_teams) != '[]')) && !github.event.pull_request.draft && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on review requested
-        uses: mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -104,7 +104,7 @@ jobs:
     if: inputs.approved-section != '' && needs.check-for-secrets.outputs.has-asana-token == 'yes' && github.event.action == 'submitted' && github.event.review.state == 'approved' && !github.event.pull_request.draft && github.actor != 'dependabot[bot]'
     steps:
       - name: Move ticket on approval
-        uses: mbta/github-asana-action@v4.4.3
+        uses: mbta/github-asana-action@a55ffe54dfdcc5190ab2204f146941890499da3f # v4.4.3
         with:
           asana-pat: ${{ secrets.asana-token }}
           trigger-phrase: ${{ inputs.trigger-phrase }}
@@ -116,7 +116,7 @@ jobs:
     if: inputs.attach-pr && needs.check-for-secrets.outputs.has-github-secret == 'yes' && github.actor != 'dependabot[bot]'
     steps:
       - name: Create pull request attachments
-        uses: Asana/create-app-attachment-github-action@v1.3
+        uses: Asana/create-app-attachment-github-action@affc72d57bac733d864d4189ed69a9cbd61a9e4f # v1.3
         id: postAttachment
         with:
           asana-secret: ${{ secrets.github-secret }}

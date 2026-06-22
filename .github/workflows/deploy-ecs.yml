@@ -54,10 +54,10 @@ jobs:
     environment: ${{ inputs.environment }}
     concurrency: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: mbta/actions/build-push-ecr@v2
+      - uses: mbta/actions/build-push-ecr@d37877022d4ae12e96663d2e0a970a5214a2e232 # v2.20
         id: build-push
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
@@ -65,14 +65,14 @@ jobs:
           dockerfile-path: ${{ inputs.dockerfile-path }}
           docker-additional-args: ${{ inputs.docker-additional-args }}
           docker-additional-tags: ${{ inputs.docker-additional-tags }}
-      - uses: mbta/actions/deploy-ecs@v2
+      - uses: mbta/actions/deploy-ecs@d37877022d4ae12e96663d2e0a970a5214a2e232 # v2.20
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           ecs-cluster: ${{ inputs.cluster || inputs.app-name }}
           ecs-service: ${{ inputs.app-name }}-${{ inputs.environment }}
           docker-tag: ${{ steps.build-push.outputs.docker-tag }}
           allow-zero-desired: ${{ inputs.allow-zero-desired && 'true' || 'false' }}
-      - uses: mbta/actions/notify-slack-deploy@v2
+      - uses: mbta/actions/notify-slack-deploy@d37877022d4ae12e96663d2e0a970a5214a2e232 # v2.20
         if: ${{ !cancelled() }}
         with:
           webhook-url: ${{ secrets.slack-webhook }}
