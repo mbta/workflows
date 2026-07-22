@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: mbta/actions/build-push-ecr@62db3e5c547c3c7f439c4a7fb98e69fc79c1a9cc # v2.21
+      - uses: mbta/actions/build-push-ecr@2c88be6542aa1b129d6a273cae070af9b1e7c076 # v2.22
         id: build-push
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
